@@ -2,7 +2,7 @@
 
 An unofficial, read-only MCP server for researching public Outsite locations, quoted stay rates, and individual room calendars.
 
-Repository: [Boe-Ventures/outsite-mcp](https://github.com/Boe-Ventures/outsite-mcp)
+Repository: [kristianeboe/outsite-mcp](https://github.com/kristianeboe/outsite-mcp)
 
 This project uses Outsite's public website and the same anonymous GraphQL reads used by its booking interface. It does not forward browser cookies, access Outsite accounts, book rooms, or make payments. Outsite has not endorsed this project, and its private GraphQL contract can change without notice.
 
