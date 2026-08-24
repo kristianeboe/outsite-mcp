@@ -54,6 +54,8 @@ https://outsite-mcp.kristianeboe.me/mcp
 
 Deploy from the connected GitHub repository or run `pnpm deploy`. Re-run the live smoke and MCP Inspector against the production endpoint after each tool-contract change.
 
+DNS for the custom hostname can be managed through Namecheap's official remote MCP at `https://mcp.namecheap.com/mcp`. Read the existing zone first, then add the CNAME target supplied by Manufact and verify that the record persisted.
+
 ## Boundaries
 
 - Keep the public surface anonymous and read-only.
