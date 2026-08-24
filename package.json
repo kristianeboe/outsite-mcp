@@ -1,0 +1,42 @@
+{
+  "name": "outsite-mcp",
+  "type": "module",
+  "engines": {
+    "node": ">=22.22.2"
+  },
+  "version": "1.0.0",
+  "description": "Unofficial, read-only Outsite location, rate, and room-calendar research over MCP",
+  "author": "Kristian Elset Bø",
+  "license": "MIT",
+  "homepage": "https://outsite-mcp.kristianeboe.me",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kristianeboe/outsite-mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "chatgpt plugins",
+    "claude connector",
+    "mcp-app",
+    "mcp-use",
+    "manufact"
+  ],
+  "scripts": {
+    "build": "mcp-use build",
+    "dev": "mcp-use dev",
+    "start": "mcp-use start",
+    "deploy": "mcp-use deploy",
+    "typecheck": "mcp-use typecheck",
+    "test": "tsx --test test/**/*.test.ts"
+  },
+  "dependencies": {
+    "mcp-use": "2.3.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
+  }
+}
