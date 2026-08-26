@@ -98,6 +98,7 @@ export interface StaySearchResult {
   endDate: string;
   guests: number;
   nights: number;
+  member: boolean | null;
   rates: StayRate[];
   unavailableRoomTypes: UnavailableRoomType[];
   source: Source;
@@ -236,6 +237,7 @@ export class OutsiteClient {
     startDate: string;
     endDate: string;
     guests?: number;
+    member?: boolean;
     includeUnavailable?: boolean;
   }): Promise<StaySearchResult> {
     const property = await this.resolveProperty(input.property);
@@ -292,7 +294,7 @@ export class OutsiteClient {
         continue;
       }
 
-      rates.push({
+      const rate: StayRate = {
         id: `${property.id}:${roomType.roomTypeId}:${optionalString(row.rateId) ?? optionalString(row.rateName) ?? "rate"}`,
         propertyId: property.id,
         propertySlug: property.slug,
@@ -316,7 +318,11 @@ export class OutsiteClient {
         nights: optionalNumber(row.nights) ?? nights,
         cancellationSummary: optionalString(row.cancellationPolicy?.summary),
         bookingUrl,
-      });
+      };
+
+      if (input.member === undefined || rate.isMemberRate === input.member) {
+        rates.push(rate);
+      }
     }
 
     rates.sort(
@@ -331,13 +337,14 @@ export class OutsiteClient {
       endDate: input.endDate,
       guests,
       nights,
+      member: input.member ?? null,
       rates,
       unavailableRoomTypes: input.includeUnavailable
         ? [...unavailable.values()]
         : [],
       source: this.source(bookingUrl),
       caveat:
-        "Public rate discovery does not establish membership entitlement or guarantee that a quoted room remains bookable. Confirm the final rate on Outsite before booking.",
+        "Outsite's member label does not establish eligibility. Guest rates, member rates, and promotions can appear in any price order, so leave member unset when comparing the cheapest public rate. Confirm the final rate on Outsite before booking.",
     };
   }
 
@@ -584,14 +591,21 @@ export function formatLocationSearchText(result: LocationSearchResult): string {
 }
 
 export function formatStaySearchText(result: StaySearchResult): string {
+  const filterLabel =
+    result.member === true
+      ? "member"
+      : result.member === false
+        ? "guest or non-member"
+        : "public";
   if (result.rates.length === 0)
-    return `No currently available rate was returned for ${result.property.name}, ${result.startDate} to ${result.endDate}. Checked ${result.source.fetchedAt}.`;
+    return `No currently available ${filterLabel} rate was returned for ${result.property.name}, ${result.startDate} to ${result.endDate}. Checked ${result.source.fetchedAt}.`;
   const lines = result.rates.map((rate) => {
     const label = rate.rateName ?? rate.ratePlanName ?? "Public rate";
     return `- ${rate.roomName}: ${formatMoney(rate.totalRate, rate.currency)} total (${formatMoney(rate.totalRatePerNight, rate.currency)}/night), ${label}, ${rate.roomsAvailable} available`;
   });
   return [
     `${result.property.name}: ${result.startDate} to ${result.endDate} (${result.nights} nights)`,
+    `Rate filter: ${filterLabel}`,
     ...lines,
     `Checked ${result.source.fetchedAt}. Rates can change; confirm on Outsite before booking.`,
   ].join("\n");

@@ -80,7 +80,7 @@ test("collapses consecutive available days into open windows", () => {
   );
 });
 
-test("does not send cookies or authorization to Outsite", async () => {
+test("filters member and guest rates without sending credentials", async () => {
   const requests: Array<{ url: string; init?: RequestInit }> = [];
   const fetchMock: typeof fetch = async (input, init) => {
     const url = String(input);
@@ -96,6 +96,28 @@ test("does not send cookies or authorization to Outsite", async () => {
     return Response.json({
       data: {
         availableRooms: [
+          {
+            currency: "USD",
+            propertyId: "at2",
+            rateId: "guest-weekly",
+            totalRate: 549.5,
+            roomsAvailable: 1,
+            roomType: {
+              id: "a31da272-3105-5abd-bbde-8b2766df3ad7",
+              name: "Woodland",
+              description: "Private room",
+              bedType: "Queen",
+              roomSize: 20,
+              maxGuests: 2,
+            },
+            totalRateBeforeDiscount: 610.56,
+            totalRatePerNight: 78.5,
+            nights: 7,
+            ratePlanNamePublic: "Weekly",
+            isMemberRate: false,
+            rateName: "Guest Weekly Rate",
+            cancellationPolicy: { summary: "Flexible" },
+          },
           {
             currency: "USD",
             propertyId: "at2",
@@ -135,13 +157,50 @@ test("does not send cookies or authorization to Outsite", async () => {
     guests: 1,
   });
 
-  assert.equal(result.rates[0]?.roomName, "Woodland");
-  assert.equal(result.rates[0]?.totalRate, 573.36);
+  assert.deepEqual(
+    result.rates.map((rate) => [rate.totalRate, rate.isMemberRate]),
+    [
+      [549.5, false],
+      [573.36, true],
+    ],
+  );
+  assert.equal(result.member, null);
+
+  const memberResult = await client.searchStays({
+    property: "austin-travis-heights",
+    startDate: "2026-09-12",
+    endDate: "2026-09-19",
+    guests: 1,
+    member: true,
+  });
+  assert.deepEqual(
+    memberResult.rates.map((rate) => [rate.totalRate, rate.isMemberRate]),
+    [[573.36, true]],
+  );
+  assert.equal(memberResult.member, true);
+
+  const guestResult = await client.searchStays({
+    property: "austin-travis-heights",
+    startDate: "2026-09-12",
+    endDate: "2026-09-19",
+    guests: 1,
+    member: false,
+  });
+  assert.deepEqual(
+    guestResult.rates.map((rate) => [rate.totalRate, rate.isMemberRate]),
+    [[549.5, false]],
+  );
+  assert.equal(guestResult.member, false);
+
   const graphRequest = requests.find(({ url }) => url.includes("graphql"));
   assert.ok(graphRequest);
   const headers = new Headers(graphRequest.init?.headers);
   assert.equal(headers.has("cookie"), false);
   assert.equal(headers.has("authorization"), false);
+  assert.equal(
+    requests.filter(({ url }) => url.includes("graphql")).length,
+    1,
+  );
 });
 
 test(

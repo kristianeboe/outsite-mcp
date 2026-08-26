@@ -9,7 +9,7 @@ This project uses Outsite's public website and the same anonymous GraphQL reads 
 ## Tools
 
 - `find_outsite_locations`: resolve a city, country, neighborhood, or house name to an Outsite slug.
-- `search_outsite_stays`: return current room/rate combinations for exact dates.
+- `search_outsite_stays`: return current room/rate combinations for exact dates. Its optional `member` filter accepts `true` for member-labelled rates, `false` for guest or non-member rates, and can be omitted to compare both.
 - `get_outsite_room_calendar`: inspect a specific room type across a wider date window and identify contiguous open periods.
 
 All tools are read-only and include a source URL plus `fetchedAt` timestamp.
@@ -62,6 +62,7 @@ DNS for the custom hostname can be managed through Namecheap's official remote M
 - Never accept, store, or forward Outsite session cookies or account tokens.
 - Do not add booking, payment, reservation changes, or other mutations.
 - Treat returned member-rate labels as public price discovery, not proof of membership entitlement.
+- Leave `member` unset when looking for the cheapest quote. Guest, member, and promotional rates can appear in any price order.
 - Preserve raw rate totals and timestamps. Do not promise availability.
 
 ## Documentation used

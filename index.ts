@@ -11,7 +11,7 @@ import {
 const server = new MCPServer({
   name: "outsite-availability",
   title: "Outsite Availability",
-  version: "1.0.0",
+  version: "1.1.0",
   description:
     "Unofficial, read-only research tools for public Outsite locations, room availability, and quoted rates.",
 });
@@ -114,7 +114,7 @@ export const searchStays = server.tool(
     name: "search_outsite_stays",
     title: "Search Outsite stays",
     description:
-      "Use this when the user wants current room options and quoted public rates for one Outsite location and an exact check-in/check-out period. Call find_outsite_locations first when the slug is unknown.",
+      "Use this when the user wants current room options and quoted public rates for one Outsite location and an exact check-in/check-out period. Call find_outsite_locations first when the slug is unknown. Leave member unset when comparing prices because guest rates, member rates, and promotions can appear in any price order.",
     inputSchema: z.object({
       property: z
         .string()
@@ -124,6 +124,12 @@ export const searchStays = server.tool(
       startDate: z.string().describe("Check-in date in YYYY-MM-DD format."),
       endDate: z.string().describe("Check-out date in YYYY-MM-DD format."),
       guests: z.number().int().min(1).max(12).default(1),
+      member: z
+        .boolean()
+        .optional()
+        .describe(
+          "Set true to return only rates explicitly labeled as member rates, false for only guest or non-member rates, or omit to return both. This label does not prove membership eligibility.",
+        ),
       includeUnavailable: z.boolean().default(false),
     }),
     outputSchema: z.object({
@@ -132,6 +138,7 @@ export const searchStays = server.tool(
       endDate: z.string(),
       guests: z.number(),
       nights: z.number(),
+      member: z.boolean().nullable(),
       rates: z.array(rateSchema),
       unavailableRoomTypes: z.array(
         z.object({
@@ -153,13 +160,21 @@ export const searchStays = server.tool(
       idempotentHint: true,
     },
   },
-  async ({ property, startDate, endDate, guests, includeUnavailable }) => {
+  async ({
+    property,
+    startDate,
+    endDate,
+    guests,
+    member,
+    includeUnavailable,
+  }) => {
     try {
       const result = await outsite.searchStays({
         property,
         startDate,
         endDate,
         guests,
+        member,
         includeUnavailable,
       });
       return {
@@ -241,7 +256,7 @@ server.get("/health", (context) =>
   context.json({
     status: "ok",
     server: "outsite-availability",
-    version: "1.0.0",
+    version: "1.1.0",
     readOnly: true,
   }),
 );

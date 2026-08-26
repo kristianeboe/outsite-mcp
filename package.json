@@ -5,7 +5,7 @@
   "engines": {
     "node": ">=22.22.2"
   },
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Unofficial, read-only Outsite location, rate, and room-calendar research over MCP",
   "author": "Kristian Elset Bø",
   "license": "MIT",
